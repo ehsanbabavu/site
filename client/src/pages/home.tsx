@@ -5,6 +5,8 @@ import { Menu, X, Users, ArrowRight, ChevronDown, ChevronLeft, ChevronRight } fr
 import { useState, useEffect, useCallback, ReactNode } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import ariyaBotImage from "@assets/generated_images/colorful_ai_ariya_bot_assistant_illustration.png";
+import robotCharacterImage from "@assets/generated_images/robot_character.jpg";
+import robotCharacterVideosImage from "@assets/generated_images/robot_character_videos.jpg";
 
 function TypeWriter({ text, speed = 100 }: { text: string; speed?: number }) {
   const [displayedText, setDisplayedText] = useState('');
@@ -355,6 +357,8 @@ export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [hasUnreadBotMessage, setHasUnreadBotMessage] = useState(false);
+  const [showInitialBubble, setShowInitialBubble] = useState(true);
   const [chatMessages, setChatMessages] = useState<Array<{id: number, text: string, sender: 'user' | 'bot'}>>([
     { id: 1, text: 'سلام! چطور می‌تونم کمکتون کنم؟', sender: 'bot' }
   ]);
@@ -372,6 +376,20 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Clear unread notification and initial bubble when chat is opened
+  useEffect(() => {
+    if (isContactOpen) {
+      setHasUnreadBotMessage(false);
+      setShowInitialBubble(false);
+    }
+  }, [isContactOpen]);
+
+  // Hide initial bubble when user sends a message
+  const handleSendMessageWithBubbleHide = (callback: () => void) => {
+    setShowInitialBubble(false);
+    callback();
+  };
 
   // Helper for smooth scroll or navigation
   const navItems = [
@@ -391,24 +409,27 @@ export default function Home() {
   };
 
   const handleSendMessage = () => {
-    if (inputMessage.trim()) {
-      const newMessage = {
-        id: chatMessages.length + 1,
-        text: inputMessage,
-        sender: 'user' as const
-      };
-      setChatMessages([...chatMessages, newMessage]);
-      setInputMessage('');
-      
-      // Simulate bot response
-      setTimeout(() => {
-        setChatMessages(prev => [...prev, {
-          id: prev.length + 1,
-          text: 'متشکرم برای پیام! تیم ما بزودی جواب می‌دهد.',
-          sender: 'bot'
-        }]);
-      }, 1000);
-    }
+    handleSendMessageWithBubbleHide(() => {
+      if (inputMessage.trim()) {
+        const newMessage = {
+          id: chatMessages.length + 1,
+          text: inputMessage,
+          sender: 'user' as const
+        };
+        setChatMessages([...chatMessages, newMessage]);
+        setInputMessage('');
+        
+        // Simulate bot response
+        setTimeout(() => {
+          setChatMessages(prev => [...prev, {
+            id: prev.length + 1,
+            text: 'پیام شما دریافت شد در اسرع وقت پاسخگو خواهم بود',
+            sender: 'bot'
+          }]);
+          setHasUnreadBotMessage(true);
+        }, 5000);
+      }
+    });
   };
 
   const faqItems = [
@@ -676,23 +697,15 @@ export default function Home() {
               {/* Animated Stats Container */}
               <div className="relative z-10 w-72 h-72 md:w-96 md:h-96 flex items-center justify-center">
                 
-                {/* Central Circle */}
-                <motion.div
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="absolute w-40 h-40 md:w-48 md:h-48 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full shadow-2xl"
-                />
-                
-                {/* Center Text */}
-                <motion.div
+                {/* Center Image */}
+                <motion.img
+                  src={robotCharacterVideosImage}
+                  alt="Robot Character"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
-                  className="relative z-10 text-center"
-                >
-                  <div className="text-white font-black text-4xl md:text-5xl">24/7</div>
-                  <div className="text-white/80 text-sm md:text-base mt-2">پشتیبانی</div>
-                </motion.div>
+                  className="relative z-10 w-64 h-64 md:w-96 md:h-96 object-contain"
+                />
 
                 {/* Orbiting Elements */}
                 <motion.div
@@ -992,7 +1005,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0 }}
               viewport={{ once: true }}
-              whileHover={{ y: -6, shadow: true, transition: { duration: 0.3 } }}
+              whileHover={{ y: -6, transition: { duration: 0.3 } }}
               className="group relative bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-100"
             >
               {/* Gradient Accent Top */}
@@ -1050,7 +1063,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
               viewport={{ once: true }}
-              whileHover={{ y: -6, shadow: true, transition: { duration: 0.3 } }}
+              whileHover={{ y: -6, transition: { duration: 0.3 } }}
               className="group relative bg-gradient-to-br from-white via-purple-50 to-gray-50 rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all border-2 border-purple-300"
             >
               {/* Gradient Accent Top */}
@@ -1108,7 +1121,7 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
-              whileHover={{ y: -6, shadow: true, transition: { duration: 0.3 } }}
+              whileHover={{ y: -6, transition: { duration: 0.3 } }}
               className="group relative bg-gradient-to-br from-white to-emerald-50 rounded-xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-100"
             >
               {/* Gradient Accent Top */}
@@ -1183,7 +1196,7 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="pt-8 md:pt-12 pb-20 md:pb-32 px-4 overflow-hidden">
+      <section id="faq" className="pt-8 md:pt-12 pb-20 md:pb-32 px-4 overflow-hidden bg-white">
         <div className="container mx-auto">
           {/* Section Header */}
           <motion.div 
@@ -1212,74 +1225,14 @@ export default function Home() {
               <div className="absolute -top-20 -left-20 w-64 h-64 bg-blue-100/30 rounded-full blur-3xl"></div>
               <div className="absolute -bottom-20 -right-20 w-72 h-72 bg-purple-100/30 rounded-full blur-3xl"></div>
 
-              {/* Illustration SVG */}
-              <svg viewBox="0 0 400 300" className="w-full h-auto max-w-md relative z-10">
-                <defs>
-                  <linearGradient id="truckGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: '#60A5FA', stopOpacity: 1 }} />
-                    <stop offset="100%" style={{ stopColor: '#3B82F6', stopOpacity: 1 }} />
-                  </linearGradient>
-                </defs>
-
-                {/* Truck */}
-                <rect x="50" y="140" width="120" height="80" rx="10" fill="url(#truckGradient)" />
-                <rect x="160" y="130" width="60" height="90" rx="5" fill="#60A5FA" opacity="0.7" />
-                
-                {/* Wheels */}
-                <circle cx="90" cy="220" r="15" fill="#1E40AF" />
-                <circle cx="170" cy="220" r="15" fill="#1E40AF" />
-                <circle cx="90" cy="220" r="10" fill="#93C5FD" />
-                <circle cx="170" cy="220" r="10" fill="#93C5FD" />
-
-                {/* Question Mark Circle */}
-                <motion.circle
-                  cx="240"
-                  cy="100"
-                  r="60"
-                  fill="none"
-                  stroke="#3B82F6"
-                  strokeWidth="3"
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
-                  style={{ transformOrigin: "240px 100px" }}
-                />
-                
-                {/* Dashed Circle */}
-                <motion.circle
-                  cx="240"
-                  cy="100"
-                  r="50"
-                  fill="none"
-                  stroke="#60A5FA"
-                  strokeWidth="2"
-                  strokeDasharray="5,5"
-                  opacity="0.5"
-                  animate={{ rotate: -360 }}
-                  transition={{ repeat: Infinity, duration: 10, ease: "linear" }}
-                  style={{ transformOrigin: "240px 100px" }}
-                />
-
-                {/* Question Mark */}
-                <text x="240" y="120" fontSize="80" fontWeight="bold" fill="#1E40AF" textAnchor="middle" fontFamily="Arial">
-                  ?
-                </text>
-
-                {/* Animated Lines */}
-                <motion.line
-                  x1="60" y1="120" x2="120" y2="80"
-                  stroke="#93C5FD" strokeWidth="2"
-                  opacity="0.6"
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                />
-                <motion.line
-                  x1="200" y1="200" x2="250" y2="160"
-                  stroke="#93C5FD" strokeWidth="2"
-                  opacity="0.6"
-                  animate={{ opacity: [1, 0.3, 1] }}
-                  transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
-                />
-              </svg>
+              {/* Robot Character Image */}
+              <motion.img 
+                src={robotCharacterImage}
+                alt="Robot Character"
+                className="w-full h-auto max-w-2xl relative z-10 object-contain -translate-y-12"
+                animate={{ y: [0, -15, 0] }}
+                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+              />
             </motion.div>
 
             {/* Right Column - FAQ */}
@@ -1427,140 +1380,256 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Floating Chat Button */}
+      {/* Floating Chat Button - Modern Design */}
       <motion.div
         className="fixed bottom-8 right-8 z-40 flex items-center gap-3 flex-row-reverse"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Chat bubble with typing text - shows on scroll */}
+        {/* Initial bubble - shows before user sends any message and when scrolled */}
         <AnimatePresence>
-          {isScrolled && (
+          {showInitialBubble && !isContactOpen && isScrolled && (
             <motion.div
-              className="bg-white rounded-2xl shadow-lg px-4 py-2"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              className="relative bg-white rounded-2xl shadow-xl px-4 py-2 border border-red-50 max-w-xs"
+              initial={{ opacity: 0, x: -20, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -20, scale: 0.9 }}
+              transition={{ duration: 0.3, type: "spring" }}
             >
-              <div className="flex items-center gap-1" style={{ fontFamily: 'Estedad, sans-serif' }}>
-                <span className="text-sm text-gray-700">
-                  <TypeWriter text="چطور میتونم کمکتون کنم" speed={50} />
-                </span>
-                <motion.span
-                  animate={{ opacity: [0, 1, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.2 }}
-                  className="text-sm text-gray-400"
-                >
-                  |
-                </motion.span>
-              </div>
+              <div className="absolute -bottom-1 right-6 w-3 h-3 bg-white border-l border-b border-red-50 rotate-45"></div>
+              <p className="text-xs text-gray-800 leading-tight" style={{ fontFamily: 'Estedad, sans-serif' }}>
+                <TypeWriter text={chatMessages[0]?.text.substring(0, 40) + '...'} speed={30} />
+              </p>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Chat Button */}
+        {/* Notification bubble - shows when bot has unread message */}
+        <AnimatePresence>
+          {hasUnreadBotMessage && !isContactOpen && (
+            <motion.div
+              className="relative bg-white rounded-2xl shadow-xl px-4 py-2 border border-red-50 max-w-xs"
+              initial={{ opacity: 0, x: -20, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -20, scale: 0.9 }}
+              transition={{ duration: 0.3, type: "spring" }}
+            >
+              <div className="absolute -bottom-1 right-6 w-3 h-3 bg-white border-l border-b border-red-50 rotate-45"></div>
+              <p className="text-xs text-gray-800 leading-tight" style={{ fontFamily: 'Estedad, sans-serif' }}>
+                <TypeWriter text={chatMessages[chatMessages.length - 1]?.text.substring(0, 40) + '...'} speed={30} />
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Chat Button - Modern with notification badge */}
         <motion.button
+          key={`chat-btn-${hasUnreadBotMessage}`}
           onClick={() => setIsContactOpen(!isContactOpen)}
-          className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 shadow-xl flex items-center justify-center text-white hover:shadow-2xl transition-shadow flex-shrink-0"
-          whileHover={{ scale: 1.1 }}
+          className={`relative w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-white transition-all flex-shrink-0 group ${
+            hasUnreadBotMessage && !isContactOpen
+              ? 'bg-gradient-to-br from-red-600 via-red-500 to-red-700 hover:shadow-red-500/50'
+              : 'bg-gradient-to-br from-purple-600 via-purple-500 to-blue-600 hover:shadow-purple-500/50'
+          }`}
+          whileHover={{ scale: 1.1, rotate: 5 }}
           whileTap={{ scale: 0.95 }}
+          animate={isContactOpen ? { rotate: 180 } : (hasUnreadBotMessage ? { x: [0, -20, 20, -20, 0] } : { rotate: 0 })}
+          transition={hasUnreadBotMessage ? { repeat: Infinity, repeatDelay: 5, duration: 0.4 } : undefined}
         >
-          <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-          </svg>
+          <motion.div
+            className="absolute inset-0 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 opacity-0 group-hover:opacity-100 blur-xl"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          />
+          <AnimatePresence mode="wait">
+            {isContactOpen ? (
+              <motion.div
+                key="close"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <X className="w-7 h-7 relative z-10" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="open"
+                initial={{ rotate: 90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <svg className="w-7 h-7 relative z-10" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+                </svg>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Notification Badge */}
+          <motion.div
+            className="absolute -top-1 -left-1 w-5 h-5 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}
+          >
+            <div className="w-2 h-2 bg-white rounded-full"></div>
+          </motion.div>
         </motion.button>
       </motion.div>
 
-      {/* Contact Modal */}
+      {/* Contact Modal Backdrop */}
       <AnimatePresence>
         {isContactOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/40 z-40"
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-gradient-to-br from-black/50 via-purple-900/20 to-black/50 backdrop-blur-sm z-40"
             onClick={() => setIsContactOpen(false)}
           />
         )}
       </AnimatePresence>
 
-      <motion.div
-        initial={{ x: 350, opacity: 0 }}
-        animate={{ 
-          x: isContactOpen ? 0 : 350,
-          opacity: isContactOpen ? 1 : 0
-        }}
-        exit={{ x: 350, opacity: 0 }}
-        transition={{ type: "spring", stiffness: 400, damping: 40 }}
-        className="fixed right-8 bottom-8 z-50 w-72 h-[32rem] bg-white shadow-2xl rounded-3xl flex flex-col overflow-hidden border border-purple-100/50"
-      >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-5 py-4 flex items-center justify-between flex-shrink-0">
-          <motion.button
-            onClick={() => setIsContactOpen(false)}
-            className="p-1 hover:bg-white/20 rounded-full transition-colors"
-            whileHover={{ scale: 1.1 }}
+      {/* Modern Chat Window */}
+      <AnimatePresence>
+        {isContactOpen && (
+          <motion.div
+            initial={{ x: 400, opacity: 0, scale: 0.9 }}
+            animate={{ x: 0, opacity: 1, scale: 1 }}
+            exit={{ x: 400, opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed right-8 bottom-8 z-50 w-80 h-96 bg-white shadow-2xl rounded-3xl flex flex-col overflow-hidden border border-purple-200/50"
           >
-            <X className="w-4 h-4" />
-          </motion.button>
-          <h3 className="text-sm font-bold" style={{ fontFamily: 'Estedad, sans-serif' }}>چت زنده</h3>
-          <div className="w-5 h-5 rounded-full bg-green-400 flex items-center justify-center flex-shrink-0">
-            <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-          </div>
-        </div>
-
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-gradient-to-b from-white to-purple-50/20 scrollbar-hide">
-          {chatMessages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[200px] px-3 py-2 rounded-xl text-xs ${
-                  msg.sender === 'user'
-                    ? 'bg-gradient-to-r from-purple-500 to-blue-600 text-white rounded-br-none'
-                    : 'bg-gray-100 text-gray-800 rounded-bl-none'
-                }`}
-                style={{ fontFamily: 'Estedad, sans-serif' }}
+            {/* Modern Header with Avatar */}
+            <div className="relative bg-gradient-to-r from-purple-600 via-purple-500 to-blue-600 text-white px-4 py-3 flex items-center gap-3 flex-shrink-0">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+              
+              {/* Bot Avatar */}
+              <motion.div 
+                className="relative flex-shrink-0"
+                animate={{ y: [0, -3, 0] }}
+                transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
               >
-                <p className="leading-relaxed">{msg.text}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <div className="w-9 h-9 rounded-full bg-white p-1 shadow-lg">
+                  <img 
+                    src={ariyaBotImage}
+                    alt="Ariya Bot"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white">
+                  <motion.div 
+                    className="w-full h-full bg-green-300 rounded-full"
+                    animate={{ scale: [1, 1.3, 1] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                  />
+                </div>
+              </motion.div>
 
-        {/* Input Area */}
-        <div className="border-t border-purple-100/30 px-3 py-3 bg-white flex-shrink-0">
-          <div className="flex gap-1.5">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleSendMessage}
-              className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-600 text-white flex items-center justify-center hover:shadow-md transition-shadow"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16201717 C3.34915502,0.9 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.99021575 L3.03521743,10.4312088 C3.03521743,10.5883061 3.19218622,10.7454035 3.50612381,10.7454035 L16.6915026,11.5308904 C16.6915026,11.5308904 17.1624089,11.5308904 17.1624089,12.0021826 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z" />
-              </svg>
-            </motion.button>
-            <input
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder="پیام..."
-              className="flex-1 px-3 py-1.5 text-xs border border-purple-200 rounded-full focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-300 transition-all bg-purple-50/50"
-              style={{ fontFamily: 'Estedad, sans-serif' }}
-            />
-          </div>
-        </div>
-      </motion.div>
+              {/* Header Text */}
+              <div className="flex-1 relative z-10">
+                <h3 className="text-sm font-bold mb-0" style={{ fontFamily: 'Vazirmatn-Regular' }}>دستیار آریا</h3>
+                <div className="flex items-center gap-1">
+                  <motion.div
+                    className="w-1.5 h-1.5 bg-green-300 rounded-full"
+                    animate={{ opacity: [1, 0.3, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  />
+                  <span className="text-xs text-white/80">آنلاین</span>
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <motion.button
+                onClick={() => setIsContactOpen(false)}
+                className="relative z-10 p-1 hover:bg-white/20 rounded-lg transition-colors"
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X className="w-4 h-4" />
+              </motion.button>
+            </div>
+
+            {/* Messages Area - Modern Design */}
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-gradient-to-b from-gray-50 via-white to-purple-50/30">
+              {chatMessages.map((msg, index) => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  className={`flex items-end gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  {/* Bot Avatar for bot messages */}
+                  {msg.sender === 'bot' && (
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-100 to-blue-100 p-0.5 flex-shrink-0">
+                      <img 
+                        src={ariyaBotImage}
+                        alt="Bot"
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  {/* Message Bubble */}
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className={`relative max-w-[70%] px-3 py-1.5 rounded-xl shadow-sm ${
+                      msg.sender === 'user'
+                        ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white rounded-br-sm'
+                        : 'bg-white text-gray-800 rounded-bl-sm border border-purple-100'
+                    }`}
+                  >
+                    <p className="text-xs leading-snug" style={{ fontFamily: 'Estedad, sans-serif' }}>
+                      {msg.text}
+                    </p>
+                  </motion.div>
+
+                  {/* User Avatar placeholder */}
+                  {msg.sender === 'user' && (
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex-shrink-0 flex items-center justify-center text-white flex-shrink-0">
+                      <Users className="w-3 h-3" />
+                    </div>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Modern Input Area */}
+            <div className="border-t border-purple-100 px-4 py-3 bg-gradient-to-r from-purple-50/50 to-blue-50/50 flex-shrink-0">
+              <div className="flex gap-2.5 items-center">
+                <input
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="پیام..."
+                  className="flex-1 px-3 py-2.5 text-sm border-2 border-purple-200 rounded-2xl focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-200 transition-all bg-white shadow-sm"
+                  style={{ fontFamily: 'Estedad, sans-serif' }}
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSendMessage}
+                  className="flex-shrink-0 w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 text-white flex items-center justify-center hover:shadow-lg hover:shadow-purple-500/50 transition-all"
+                >
+                  <motion.svg 
+                    className="w-4 h-4" 
+                    fill="currentColor" 
+                    viewBox="0 0 24 24"
+                    whileHover={{ x: 2, y: -2 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <path d="M16.6915026,12.4744748 L3.50612381,13.2599618 C3.19218622,13.2599618 3.03521743,13.4170592 3.03521743,13.5741566 L1.15159189,20.0151496 C0.8376543,20.8006365 0.99,21.89 1.77946707,22.52 C2.41,22.99 3.50612381,23.1 4.13399899,22.8429026 L21.714504,14.0454487 C22.6563168,13.5741566 23.1272231,12.6315722 22.9702544,11.6889879 L4.13399899,1.16201717 C3.34915502,0.9 2.40734225,1.00636533 1.77946707,1.4776575 C0.994623095,2.10604706 0.837654326,3.0486314 1.15159189,3.99021575 L3.03521743,10.4312088 C3.03521743,10.5883061 3.19218622,10.7454035 3.50612381,10.7454035 L16.6915026,11.5308904 C16.6915026,11.5308904 17.1624089,11.5308904 17.1624089,12.0021826 C17.1624089,12.4744748 16.6915026,12.4744748 16.6915026,12.4744748 Z" />
+                  </motion.svg>
+                </motion.button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Background decoration */}
       <div className="fixed top-0 right-0 w-1/2 h-full bg-gradient-to-bl from-blue-50/50 via-purple-50/30 to-transparent -z-10 rounded-bl-[100px]"></div>
